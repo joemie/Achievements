@@ -1,5 +1,6 @@
 <?php
   include 'mysql_connection.php';
+
   
   function getRealIpAddr()
   {
@@ -17,38 +18,45 @@
 	{
 		$ip = $_SERVER['REMOTE_ADDR'];
 	}
-		return $ip;
+	return $ip;
   }
 	
- /* FIIIXX MEEE NOWWW */
-  function incrementCounter()
+ 
+  function incrementCounter($userID, $achievementID)
   {
-	$query = "UPDATE `progress` SET";
+  	$query = "SELECT counter FROM progress WHERE userID = $userID AND achievementID = $achievementID";
+	$write = mysql_query($query);
+	$row = mysql_fetch_object($write);
+	$counterValue = $row->counter;
+	$query = "UPDATE `progress` SET counter = $counterValue+1 WHERE userID = $userID AND achievementID = $achievementID";
+    mysql_query($query);
   }
-  
+
   function addUser()
   {
-	$ip = $_SERVER['REMOTE_ADDR'];
-	$knownIPs = mysql_query("SELECT * FROM `users` WHERE `IP` = '$ip'");
-	$recognizedip = validIP($ip);
+	$ip = getRealIpAddr();
+	$newIP = validIP($ip);
 	  
-	if(! $recognizedip )
+	if(! $newIP )
 	{
-      $query = "INSERT INTO `users` VALUES ('', '$ip', '$level', '$points')";
+      $query = "INSERT INTO `users` VALUES ('', '$ip', '0', '1')";
 	  $write = mysql_query($query);
 	}
   }
+  
   function validIP($ip)
   {
-    $validip = true;
+    $newIP = true;
+	$knownIPs = mysql_query("SELECT * FROM `users` WHERE `ip` = '$ip'");
     while($row = mysql_fetch_object($knownIPs))
     {
 	  if($row->ip == $ip)  //if the ip is already added
 	  {
-	  	$validip = false;
+	  	$bewIP = false;
+		break;
 	  }
     }
-	return $validip;
+	return $newIP;
   }
   
   function fetchAchievement()
